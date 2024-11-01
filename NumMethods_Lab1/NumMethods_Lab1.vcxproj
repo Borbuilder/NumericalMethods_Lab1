@@ -128,10 +128,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="FirstTast.h" />
     <ClInclude Include="TrueSolution.h" />
     <ClInclude Include="TestTask.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="FirstTast.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="TestTask.cpp" />
   </ItemGroup>

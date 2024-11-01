@@ -24,8 +24,9 @@ protected:
 	std::list<std::pair<double, double>> STEPS_and_Xs;	// Лист, который хранит шаги и соответсвующие им X
 	std::list<double> ERRORS_LIST;						// Лист, который хранит ОЛП на каждом шаге
 	 
+	bool x_in_border(const double& B, const double& X, const double& BORDER); //Проверка на попадание X в окрестность правой границы
 
-	double f(const double& _X, const double& _V);														// Реализация нашей функции, в данном случае из тестовой задачи 
+	virtual double f(const double& X, const double& V);														// Реализация нашей функции, в данном случае из тестовой задачи 
 	double find_K1(const double& X, const double& V);													// Функция, которая считает K1 из метода
 	double find_K2(const double& X, const double& V, const double& STEP, const double& K1);				// ...K2
 	double find_K3(const double& X, const double& V, const double& STEP, const double& K2);				// ...K3
@@ -59,10 +60,10 @@ public:
 	~TestTask();																			 // Деструктор
 
 	void Solve_Without_Error_Control(); //Метод решения без ОЛП
-	void Solve_With_Error_Control();	//Метод решения c ОЛП
+	virtual void Solve_With_Error_Control();	//Метод решения c ОЛП
 
 	// Функции для проверки в main , в исходном варианте, они будут не нужны
-	void PrintTable();     //Вывод итоговой таблицы на консоль, надо будет менять размер консоли, чтобы всё поместилось
-	void Write_To_File();  //Запись X,Vi,Ui в файл
-	void PrintReference(); //Вывод итоговой справки
+	void virtual PrintTable();     //Вывод итоговой таблицы на консоль, надо будет менять размер консоли, чтобы всё поместилось
+	void virtual Write_To_File();  //Запись X,Vi,Ui в файл
+	void virtual PrintReference(); //Вывод итоговой справки
 };

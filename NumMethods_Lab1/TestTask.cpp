@@ -10,7 +10,7 @@
 
 
 //Вспомогательные функции
-bool x_in_border(const double& B, const double& X, const double& BORDER) { // Функция проверяет , находится ли текущий X в окрестности правой границы
+bool TestTask::x_in_border(const double& B, const double& X, const double& BORDER) { // Функция проверяет , находится ли текущий X в окрестности правой границы
 	return X >= B - BORDER && X <= B + BORDER;
 }
 
@@ -38,6 +38,8 @@ TestTask::~TestTask(){
 
 	TABLE_INFORMATION.clear();
 	DISTANCE_Ui_Vi.clear();
+	STEPS_and_Xs.clear();
+	ERRORS_LIST.clear();
 }
 
 
@@ -84,24 +86,30 @@ void TestTask::control_Error(double& X,double& V, double& X_EXTRA, double& V_EXT
 		++CURRENT_DOUBLING;
 	}
 	else if (abs(S) > parametrs.E_ERROR) {        //Если условие для деления шага выполнилось, то возвращаемся назад,
-		bool FLAG_TO_EXIT = false;				  // выполняем расчёт с половинным шагом, если для него погрешность снова 
-		while (!FLAG_TO_EXIT) {					  // оказалась большой, то снова возвращаемся и делим шаг, и так пока погрешность не будет допустимой
-			parametrs.STEP /= 2;
+		bool FLAG_TO_EXIT = false;
+		double h = parametrs.STEP;  				  // выполняем расчёт с половинным шагом, если для него погрешность снова 
+		while (!FLAG_TO_EXIT) {	
+			                                 // оказалась большой, то снова возвращаемся и делим шаг, и так пока погрешность не будет допустимой
+			h /= 2;
 			++CURRENT_REDUCTION;
 			++reference.STEP_REDUCTION_COUNT;
+
 			V = OLD_V;
 			X = OLD_X;
 			V_EXTRA = V;
 			X_EXTRA = X;
+
 			for (int i = 0; i < 2; ++i) {
-				make_Step(X_EXTRA, V_EXTRA, parametrs.STEP / 2);
+				make_Step(X_EXTRA, V_EXTRA, h / 2);
 				++reference.ITERATIONS_COUNT;
 			}
-			make_Step(X, V, parametrs.STEP / 2);
+			make_Step(X, V, h);
+
 			S = (V_EXTRA - V) / (pow(2, 4) - 1);
 			if (abs(S) <= parametrs.E_ERROR) {
 				FLAG_TO_EXIT = true;
 				V = V_EXTRA;
+				parametrs.STEP = h;
 			}
 		}
 	}
@@ -203,7 +211,7 @@ void TestTask::Solve_With_Error_Control()
 		}
 		make_Step(X, V, parametrs.STEP);
 		double S = (V_EXTRA - V) / (pow(2, 4) - 1);
-		ERRORS_LIST.emplace_back(abs(S));
+		ERRORS_LIST.emplace_back(S*pow(2,4));
 		control_Error(X, V, X_EXTRA, V_EXTRA, OLD_X, OLD_V, S, CURRENT_DOUBLING, CURRENT_REDUCTION); // Непосредственно сам контроль ЛП, подробнее см. в реализации функции
 		STEPS_and_Xs.emplace_back(std::make_pair(parametrs.STEP, X));
 		U = find_True_Solution(X, parametrs.START_POINT_FOR_U);
@@ -229,7 +237,7 @@ void TestTask::Solve_With_Error_Control()
 						++reference.ITERATIONS_COUNT;
 					}
 					S = (V_EXTRA - V) / (pow(2, 4) - 1);
-					ERRORS_LIST.emplace_back(abs(S));
+					ERRORS_LIST.emplace_back(S*pow(2,4));
 					STEPS_and_Xs.emplace_back(std::make_pair(parametrs.STEP, X));
 					U = find_True_Solution(X, parametrs.START_POINT_FOR_U);
 
@@ -316,7 +324,6 @@ void TestTask::Write_To_File()
 	std::ofstream outFile("points.txt");
 	if (!outFile) {
 		std::cerr << "Ошибка открытия файла!" << std::endl;
-		
 	}
 	else {
 		if (TABLE_INFORMATION.front().size() == 6) { //Если считали без контроля ЛП
