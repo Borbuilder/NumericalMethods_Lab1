@@ -1,4 +1,4 @@
-#include "FirstTast.h"
+#include "FirstTask.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -28,9 +28,9 @@ void FirstTask::Solve_With_Error_Control()
 		double V_EXTRA = V;         // V^ для половинного шага
 		double X_EXTRA = X;			// X^ для половинного шага
 
-		for (int i = 0; i < 2; ++i) {
+		for (int j = 0; j < 2; ++j) {
 			make_Step(X_EXTRA, V_EXTRA, parametrs.STEP / 2);
-
+			++reference.ITERATIONS_COUNT;
 		}
 		make_Step(X, V, parametrs.STEP);
 
@@ -55,10 +55,13 @@ void FirstTask::Solve_With_Error_Control()
 				if (X < parametrs.B - parametrs.E_BORDER) { //(1*)
 					X_EXTRA = X;
 					V_EXTRA = V;
-					for (int i = 0; i < 2; ++i) {
+
+					for (int j = 0; j < 2; ++j) {
 						make_Step(X_EXTRA, V_EXTRA, parametrs.STEP / 2);
 						++reference.ITERATIONS_COUNT;
 					}
+					make_Step(X, V, parametrs.STEP);
+
 					S = (V_EXTRA - V) / (pow(2, 4) - 1);
 					ERRORS_LIST.emplace_back(S * pow(2, 4));
 					STEPS_and_Xs.emplace_back(std::make_pair(parametrs.STEP, X));
@@ -74,12 +77,15 @@ void FirstTask::Solve_With_Error_Control()
 			EXIT_FROM_FOR = true;
 		}
 
+		std::vector<double> TABLE_ROW = { static_cast<double>(i), X, V, V_EXTRA, V - V_EXTRA, S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING };
+		TABLE_INFORMATION.emplace_back(TABLE_ROW);
+
 		if (EXIT_FROM_FOR) {
 			break;
 		}
 		else {
-			std::vector<double> TABLE_ROW = { static_cast<double>(i), X, V, V_EXTRA, V - V_EXTRA, S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING};
-			TABLE_INFORMATION.emplace_back(TABLE_ROW);
+			//std::vector<double> TABLE_ROW = { static_cast<double>(i), X, V, V_EXTRA, V - V_EXTRA, S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING};
+			//TABLE_INFORMATION.emplace_back(TABLE_ROW);
 
 			OLD_X = X;
 			OLD_V = V;
@@ -90,6 +96,7 @@ void FirstTask::Solve_With_Error_Control()
 	reference.DISTANCE_B_LAST_POINT = parametrs.B - X;
 	find_Max_Step();
 	find_Min_Step();
+	find_Max_Error();
 }
 
 

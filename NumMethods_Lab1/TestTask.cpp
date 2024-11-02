@@ -108,7 +108,7 @@ void TestTask::control_Error(double& X,double& V, double& X_EXTRA, double& V_EXT
 			S = (V_EXTRA - V) / (pow(2, 4) - 1);
 			if (abs(S) <= parametrs.E_ERROR) {
 				FLAG_TO_EXIT = true;
-				V = V_EXTRA;
+				//V = V_EXTRA;
 				parametrs.STEP = h;
 			}
 		}
