@@ -26,7 +26,7 @@ protected:
 	 
 	bool x_in_border(const double& B, const double& X, const double& BORDER); //Проверка на попадание X в окрестность правой границы
 
-	virtual double f(const double& X, const double& V);														// Реализация нашей функции, в данном случае из тестовой задачи 
+	virtual double f(const double& X, const double& V);													        // Реализация нашей функции, в данном случае из тестовой задачи 
 	double find_K1(const double& X, const double& V);													// Функция, которая считает K1 из метода
 	double find_K2(const double& X, const double& V, const double& STEP, const double& K1);				// ...K2
 	double find_K3(const double& X, const double& V, const double& STEP, const double& K2);				// ...K3
@@ -59,8 +59,11 @@ public:
 			 const double& _E_BORDER, const int& _MAX_STEPS, const double& _START_POINT);    // Конструктор класса
 	~TestTask();																			 // Деструктор
 
-	void Solve_Without_Error_Control(); //Метод решения без ОЛП
+	virtual void Solve_Without_Error_Control(); //Метод решения без ОЛП
 	virtual void Solve_With_Error_Control();	//Метод решения c ОЛП
+
+	FinalReference get_reference();                         //Возвращает структуру reference
+	std::list<std::vector<double>> get_table_information(); //Возвращает итоговую таблицу
 
 	// Функции для проверки в main , в исходном варианте, они будут не нужны
 	void virtual PrintTable();     //Вывод итоговой таблицы на консоль, надо будет менять размер консоли, чтобы всё поместилось

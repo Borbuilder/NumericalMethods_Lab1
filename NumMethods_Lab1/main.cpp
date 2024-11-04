@@ -1,5 +1,6 @@
 #include "TestTask.h"
 #include "FirstTask.h"
+#include "SecondTask.h"
 #include <iostream>
 #include <locale>
 
@@ -15,17 +16,17 @@ int main()
 	int MAX_STEPS{};
 	double START_POINT_FOR_U{};
 
-	std::cout << "0 - тестовая задача   1 - первая задача";
+	std::cout << "0 - тестовая задача   1 - первая задача  2 - вторая задача " << std::endl;
 	int task;
 	std::cin >> task;
 	
 	int option;
-	if (task == 0) {
-		std::cout << "1 - без ОЛП     2 - с ОЛП" << std::endl << std::endl;
-		std::cout << "Выбирите вариант решения: ";
-		std::cin >> option;
-		std::cout << std::endl;
-	}
+	
+	std::cout << "1 - без ОЛП     2 - с ОЛП" << std::endl << std::endl;
+	std::cout << "Выбирите вариант решения: ";
+	std::cin >> option;
+	std::cout << std::endl;
+	
 
 
 	std::cout << "Введите левую границу интегрирования А: " << std::endl;
@@ -58,6 +59,7 @@ int main()
 		if (option == 2) {
 			Solution.Solve_With_Error_Control();
 		}
+
 		Solution.Write_To_File();
 		Solution.PrintTable();
 		Solution.PrintReference();
@@ -65,10 +67,32 @@ int main()
 
 	if (task == 1) {
 		FirstTask Solution1(A, B, STEP, E_ERROR, E_BORDER, MAX_STEPS, START_POINT_FOR_U);
-		Solution1.Solve_With_Error_Control();
+		if (option == 1) {
+
+			Solution1.Solve_Without_Error_Control();
+		}
+		if (option == 2) {
+			Solution1.Solve_With_Error_Control();
+		}
+
 		Solution1.Write_To_File();
 		Solution1.PrintTable();
 		Solution1.PrintReference();
+	}
+
+	if (task == 2) {
+		SecondTask Solution2(A, B, STEP, E_ERROR, E_BORDER, MAX_STEPS, START_POINT_FOR_U);
+		if (option == 1) {
+
+			Solution2.Solve_Without_Error_Control();
+		}
+		if (option == 2) {
+			Solution2.Solve_With_Error_Control();
+		}
+
+		Solution2.Write_To_File();
+		Solution2.PrintTable();
+		Solution2.PrintReference();
 	}
 
 }

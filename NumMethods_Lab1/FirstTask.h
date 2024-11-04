@@ -12,7 +12,8 @@ public:
               const double& _E_BORDER, const int& _MAX_STEPS, const double& _START_POINT)
     : TestTask(_A, _B, _STEP, _E_ERROR, _E_BORDER, _MAX_STEPS, _START_POINT) {};
 
-    virtual void Solve_With_Error_Control() override;
+    void Solve_With_Error_Control() override;
+    void Solve_Without_Error_Control() override;
 
     // ‘ункции дл€ проверки в main , в исходном варианте, они будут не нужны
     void virtual PrintTable() override;     //¬ывод итоговой таблицы на консоль, надо будет мен€ть размер консоли, чтобы всЄ поместилось

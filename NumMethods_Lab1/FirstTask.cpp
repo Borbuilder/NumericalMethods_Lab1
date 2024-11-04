@@ -38,6 +38,9 @@ void FirstTask::Solve_With_Error_Control()
 		ERRORS_LIST.emplace_back(S * pow(2, 4));
 		control_Error(X, V, X_EXTRA, V_EXTRA, OLD_X, OLD_V, S, CURRENT_DOUBLING, CURRENT_REDUCTION); // Непосредственно сам контроль ЛП, подробнее см. в реализации функции
 		STEPS_and_Xs.emplace_back(std::make_pair(parametrs.STEP, X));
+
+		std::vector<double> TABLE_ROW = { static_cast<double>(i), X, V, V_EXTRA, V - V_EXTRA, S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING };
+		TABLE_INFORMATION.emplace_back(TABLE_ROW);
 		
 		bool EXIT_FROM_FOR = false;
 		if (x_in_border(parametrs.B, X, parametrs.E_BORDER)) {                       //Проверка на попадание в окрестность правой границы по X. 
@@ -60,7 +63,6 @@ void FirstTask::Solve_With_Error_Control()
 						make_Step(X_EXTRA, V_EXTRA, parametrs.STEP / 2);
 						++reference.ITERATIONS_COUNT;
 					}
-					make_Step(X, V, parametrs.STEP);
 
 					S = (V_EXTRA - V) / (pow(2, 4) - 1);
 					ERRORS_LIST.emplace_back(S * pow(2, 4));
@@ -68,6 +70,8 @@ void FirstTask::Solve_With_Error_Control()
 
 					std::vector<double> TABLE_ROW = { static_cast<double>(++i), X, V, V_EXTRA, V - V_EXTRA, S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING};
 					TABLE_INFORMATION.emplace_back(TABLE_ROW);
+					CURRENT_REDUCTION = 0.0;
+					CURRENT_DOUBLING = 0.0;
 
 					OLD_X = X;
 					OLD_V = V;
@@ -77,26 +81,64 @@ void FirstTask::Solve_With_Error_Control()
 			EXIT_FROM_FOR = true;
 		}
 
-		std::vector<double> TABLE_ROW = { static_cast<double>(i), X, V, V_EXTRA, V - V_EXTRA, S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING };
-		TABLE_INFORMATION.emplace_back(TABLE_ROW);
-
 		if (EXIT_FROM_FOR) {
+			std::vector<double> TABLE_ROW = { static_cast<double>(++i), X, V, V_EXTRA, V - V_EXTRA, S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING };
+		    TABLE_INFORMATION.emplace_back(TABLE_ROW);
 			break;
 		}
 		else {
-			//std::vector<double> TABLE_ROW = { static_cast<double>(i), X, V, V_EXTRA, V - V_EXTRA, S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING};
-			//TABLE_INFORMATION.emplace_back(TABLE_ROW);
-
 			OLD_X = X;
 			OLD_V = V;
 		}
 
 		++reference.ITERATIONS_COUNT;
 	}
-	reference.DISTANCE_B_LAST_POINT = parametrs.B - X;
-	find_Max_Step();
-	find_Min_Step();
-	find_Max_Error();
+	reference.DISTANCE_B_LAST_POINT = parametrs.B - X; std::cout << "before max_s" << std::endl;
+	find_Max_Step(); std::cout << "before mim_s" << std::endl;
+	find_Min_Step(); std::cout << "before max_er" << std::endl;
+	find_Max_Error(); std::cout << "end of solve" << std::endl;
+}
+
+void FirstTask::Solve_Without_Error_Control()
+{
+	double X = parametrs.A;
+	double V = parametrs.START_POINT_FOR_U;
+
+	std::vector<double> TABLE_ROW1 = { 1.0, X, V, parametrs.STEP}; // Здесь и далее - строка итоговой таблицы в виде { i X_i V_i STEP_i }
+	TABLE_INFORMATION.emplace_back(TABLE_ROW1);
+
+	double OLD_X = X; //В переменых OLD храним значения с последного шага
+	double OLD_V = V;
+
+	bool FLAG_TO_EXIT = false;
+	for (int i = 2; i <= parametrs.MAX_STEPS; ++i)
+	{
+		make_Step(X, V, parametrs.STEP);
+
+		if (X >= parametrs.B) {
+			if (X > parametrs.B) {						// Если X вышел за правую границу, возвращаемся на шаг назад и делаем шаг,                                        
+				X = OLD_X;								//  равный разнице правой границы и последней точкой X и заканчиваем интегрирование
+				V = OLD_V;
+		
+				parametrs.STEP = parametrs.B - OLD_X;
+				make_Step(X, V, parametrs.STEP);
+			}
+			FLAG_TO_EXIT = true;                        //Если X совпал с правой границей, заканчиваем интегрирование 
+			++reference.ITERATIONS_COUNT;
+		}
+
+		std::vector<double> TABLE_ROW = { static_cast<double>(i), X, V, parametrs.STEP};
+		TABLE_INFORMATION.emplace_back(TABLE_ROW);
+
+		if (FLAG_TO_EXIT)
+			break;
+		else {
+			OLD_X = X;
+			OLD_V = V;
+		}
+
+		++reference.ITERATIONS_COUNT;
+	}
 }
 
 
@@ -132,7 +174,7 @@ void FirstTask::Write_To_File()
 
 	for (auto it_list = TABLE_INFORMATION.begin(); it_list != TABLE_INFORMATION.end(); ++it_list) {
 		outFile << std::fixed << std::setprecision(20) << (*it_list)[1] << "\t" << std::setw(30)
-			<< std::setprecision(20) << (*it_list)[2] << std::endl;  // Запись в формате "x v "
+			                  << std::setprecision(20) << (*it_list)[2] << std::endl;  // Запись в формате "x v "
 	}
 	outFile.close();
 }

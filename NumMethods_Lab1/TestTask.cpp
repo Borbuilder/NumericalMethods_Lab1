@@ -244,6 +244,7 @@ void TestTask::Solve_With_Error_Control()
 					DISTANCE_Ui_Vi.emplace_back(abs(U - V));
 					std::vector<double> TABLE_ROW = { static_cast<double>(++i), X, V, V_EXTRA, V - V_EXTRA, S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING, U, abs(U - V) };
 					TABLE_INFORMATION.emplace_back(TABLE_ROW);
+					CURRENT_REDUCTION = 0.0;
 
 					OLD_X = X;
 					OLD_V = V;
@@ -253,13 +254,16 @@ void TestTask::Solve_With_Error_Control()
 				EXIT_FROM_FOR = true;
 		}
 
+		std::vector<double> TABLE_ROW = { static_cast<double>(i), X, V, V_EXTRA, V - V_EXTRA, S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING, U, abs(U - V) };
+		TABLE_INFORMATION.emplace_back(TABLE_ROW);
+
 		if (EXIT_FROM_FOR) {
 			break;
 		}
 		else {
 			DISTANCE_Ui_Vi.emplace_back(abs(U - V));
-			std::vector<double> TABLE_ROW = { static_cast<double>(i), X, V, V_EXTRA, V - V_EXTRA, S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING, U, abs(U - V) };
-			TABLE_INFORMATION.emplace_back(TABLE_ROW);
+			//std::vector<double> TABLE_ROW = { static_cast<double>(i), X, V, V_EXTRA, V - V_EXTRA, S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING, U, abs(U - V) };
+			//TABLE_INFORMATION.emplace_back(TABLE_ROW);
 
 			OLD_X = X;
 			OLD_V = V;
@@ -272,6 +276,16 @@ void TestTask::Solve_With_Error_Control()
 	find_Max_Distance_Ui_Vi();
 	find_Max_Step();
 	find_Min_Step();
+}
+
+TestTask::FinalReference TestTask::get_reference()
+{
+	return reference;
+}
+
+std::list<std::vector<double>> TestTask::get_table_information()
+{
+	return TABLE_INFORMATION;
 }
 
 void TestTask::find_Max_Distance_Ui_Vi()

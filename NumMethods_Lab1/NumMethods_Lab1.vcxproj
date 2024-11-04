@@ -129,12 +129,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="FirstTask.h" />
+    <ClInclude Include="SecondTask.h" />
     <ClInclude Include="TrueSolution.h" />
     <ClInclude Include="TestTask.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="FirstTask.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="SecondTask.cpp" />
     <ClCompile Include="TestTask.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
