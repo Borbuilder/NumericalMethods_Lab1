@@ -207,11 +207,88 @@ class Window:
         self.canvas.get_tk_widget().grid(row=6, column=4, rowspan=5, sticky='se', padx=5, pady=5)
 
     def create_second_task_widgets(self):
-        # Here you can add input fields and logic for the second task
-        tk.Label(self.master, text="Это интерфейс для Второй задачи (реализация в процессе)").grid(row=2, columnspan=2)
+        self.master.grid_columnconfigure(0, weight=100)
+        self.master.grid_columnconfigure(1, weight=2)
+        self.master.grid_columnconfigure(2, weight=2)
+        self.master.grid_columnconfigure(3, weight=2)
+
+        # Input fields for test task
+        tk.Label(self.master, text="A:").grid(row=0, column=1, sticky='e')
+        tk.Label(self.master, text="B:").grid(row=1, column=1, sticky='e')
+        tk.Label(self.master, text="U0:").grid(row=2, column=1, sticky='e')
+        tk.Label(self.master, text="Начальный шаг:").grid(row=3, column=1, sticky='e')
+        tk.Label(self.master, text="Контроль лок. погрешности:").grid(row=4, column=1, sticky='e')
+        tk.Label(self.master, text="Точность выхода на границу:").grid(row=5, column=1, sticky='e')
+        tk.Label(self.master, text="Макс. число шагов:").grid(row=6, column=1, sticky='e')
+
+        # Input fields
+        self.entry_a = tk.Entry(self.master)
+        self.entry_b = tk.Entry(self.master)
+        self.entry_u0 = tk.Entry(self.master)
+        self.entry_step_size = tk.Entry(self.master)
+        self.entry_max_e_error = tk.Entry(self.master)
+        self.entry_e_border = tk.Entry(self.master)
+        self.entry_max_steps = tk.Entry(self.master)
+
+        # Set default values
+        self.entry_a.insert(0, "0.0")
+        self.entry_b.insert(0, "1.0")
+        self.entry_u0.insert(0, "1.0")
+        self.entry_step_size.insert(0, "0.1")
+        self.entry_max_e_error.insert(0, "1e-5")
+        self.entry_e_border.insert(0, "1e-6")
+        self.entry_max_steps.insert(0, "10000")
+
+        # Placement of input fields
+        self.entry_a.grid(row=0, column=2, sticky='ew')
+        self.entry_b.grid(row=1, column=2, sticky='ew')
+        self.entry_u0.grid(row=2, column=2, sticky='ew')
+        self.entry_step_size.grid(row=3, column=2, sticky='ew')
+        self.entry_max_e_error.grid(row=4, column=2, sticky='ew')
+        self.entry_e_border.grid(row=5, column=2, sticky='ew')
+        self.entry_max_steps.grid(row=6, column=2, sticky='ew')
+
+        # Toggle button
+        tk.Label(self.master, text="Режим работы").grid(row=3, column=0, sticky='w')
+        self.button_mode = tk.Button(self.master, text="С ОЛП", command=self.toggle_mode)
+        self.button_mode.grid(row=4, column=0, sticky='we')
+
+        # Calculate button
+        self.calculate_button = tk.Button(self.master, text="Вычислить", command=self.calculate_values)
+        self.calculate_button.grid(row=6, column=0, sticky='we')
+
+        # Create Treeview to display the table
+        self.tree = ttk.Treeview(self.master, columns=["Col"+str(i) for i in range(10)], show="headings")
+        self.tree.grid(row=8, column=0, columnspan=3, sticky='nsew', padx=5, pady=5)  # Place the table under input fields
+
+        # Add horizontal and vertical scrolling
+        vsb = ttk.Scrollbar(self.master, orient="vertical", command=self.tree.yview)
+        vsb.grid(row=7, column=2, sticky='sne', rowspan=3)
+        self.tree.configure(yscrollcommand=vsb.set)
+
+        hsb = ttk.Scrollbar(self.master, orient="horizontal", command=self.tree.xview)
+        hsb.grid(row=9, column=0, columnspan=3, sticky='esw')
+        self.tree.configure(xscrollcommand=hsb.set)
+
+        # Configure stretching
+        self.master.grid_rowconfigure(8, weight=1)
+        self.master.grid_columnconfigure(0, weight=1)
+
+        # Create figure for the plot
+        self.figure = Figure(figsize=(5, 4), dpi=100)
+        self.ax = self.figure.add_subplot(111)
+        self.canvas = FigureCanvasTkAgg(self.figure, master=self.master)
+
+        # Create a Text widget for final report
+        self.final_report_text = tk.Text(self.master, height=10, width=50)
+        self.final_report_text.grid(row=0, column=4, rowspan=7, sticky='nwe', padx=5, pady=5)
+
+        # Place the canvas (the graph) in the bottom right
+        self.canvas.get_tk_widget().grid(row=6, column=4, rowspan=5, sticky='se', padx=5, pady=5)
 
     def calculate_values(self):
         try:
+            # Получение значений из полей ввода
             A = float(self.entry_a.get())
             B = float(self.entry_b.get())
             U0 = float(self.entry_u0.get())
@@ -219,8 +296,16 @@ class Window:
             max_e_error = float(self.entry_max_e_error.get())
             e_border = float(self.entry_e_border.get())
             max_steps = int(self.entry_max_steps.get())
-            
-            # select the task number
+
+            # Проверки на корректность значений
+            if A >= B:
+                messagebox.showerror("Ошибка", "Значение A должно быть меньше B.")
+                return
+            if max_steps <= 1:
+                messagebox.showerror("Ошибка", "Максимальное количество шагов должно быть больше 1.")
+                return
+
+            # Выбор задачи на основе выбранного элемента в ComboBox
             selected_task = self.task_selector.get()
             if selected_task == "Тестовая":
                 task = TestTask(A, B, step_size, max_e_error, e_border, max_steps, U0)
@@ -228,8 +313,8 @@ class Window:
                 task = FirstTask(A, B, step_size, max_e_error, e_border, max_steps, U0)
             elif selected_task == "Вторая":
                 task = SecondTask(A, B, step_size, max_e_error, e_border, max_steps, U0)
-        
-            # Compute
+
+            # Вычисление
             if self.button_mode.cget('text') == 'С ОЛП':
                 task.Solve_With_Error_Control()
                 self.update_table(task.get_table_information())
@@ -237,11 +322,10 @@ class Window:
                 task.Solve_Without_Error_Control()
                 self.update_table(task.get_table_information())
 
-            # Get the final report
-            final_ref = task.get_final_reference()
-            self.show_final_reference(final_ref)
+            # Отчет
+            self.show_final_reference(task.get_final_reference())
 
-            # Update the plot with U(x) and V(x)
+            # Обновление графика с U(x) и V(x)
             self.plot_graph(U0, A, B, task.get_table_information())
 
         except ValueError:
@@ -260,16 +344,34 @@ class Window:
             self.tree.delete(row)
 
         # Set column headers
-        if self.button_mode.cget('text') == 'Без ОЛП':
-            columns = ["i", "X", "V", "h"]
-            arr_width = [50, 100, 100, 100]
-        else:
-            columns = ["i", "X", "V", "V^", "V-V^", "S", "h", "/2", "*2"]
-            arr_width = [50, 100, 100, 100, 100, 100, 100, 50, 50]
+        task_num = self.task_selector.get()
+        olp_mode = self.button_mode.cget('text')
+
         
-        if self.task_selector.get() == "Тестовая":
-            columns += ["U", "|U-V|"]
-            arr_width += [100, 100]
+        if task_num == "Тестовая":
+            if olp_mode == 'Без ОЛП':
+                columns = ["i", "X", "V", "h", "U", "|U-V|"]
+                arr_width = [50, 100, 100, 100, 100, 100]
+            else:
+                columns = ["i", "X", "V", "V^", "V-V^", "S", "h", "/2", "*2", "U", "|U-V|"]
+                arr_width = [50, 100, 100, 100, 100, 100, 100, 50, 50, 100, 100]
+
+        elif task_num == "Первая":
+            if olp_mode == 'Без ОЛП':
+                columns = ["i", "X", "V", "h"]
+                arr_width = [50, 100, 100, 100]
+            else:
+                columns = ["i", "X", "V", "V^", "V-V^", "S", "h", "/2", "*2"]
+                arr_width = [50, 100, 100, 100, 100, 100, 100, 50, 50]
+        
+        elif task_num == "Вторая":
+            if olp_mode == 'Без ОЛП':
+                columns = ["i", "X", "V0", "V1", "h"]
+                arr_width = [50, 100, 100, 100, 100]
+            else:
+                columns = ["i", "X", "V0", "V1", "V0^", "V1^", "V0-V0^", "V1-V1^", "S", "h", "/2", "*2"]
+                arr_width = [50, 100, 100, 100, 100, 100, 100, 100, 100, 100, 50, 50]
+            
 
         if list(self.tree["columns"]) != columns:
             self.tree["columns"] = columns
@@ -285,7 +387,7 @@ class Window:
     def plot_graph(self, U0, A, B, table_data):
         # Clear the plot
         self.ax.clear()
-    
+
         # Generate data for the first plot
         if self.task_selector.get() == "Тестовая":
             x = np.linspace(A, B, 100)
@@ -300,6 +402,12 @@ class Window:
 
         # Plot V(x)
         self.ax.plot(X_values, V_values, label='V(x)', color='red')
+
+        # Set log scale for Y-axis if task is "Первая"
+        if self.task_selector.get() == "Первая":
+            self.ax.set_yscale("log")
+        else:
+            self.ax.set_yscale("linear")  # Ensure other tasks use a linear scale
 
         # Customize the plot
         self.ax.set_xlabel('x')
