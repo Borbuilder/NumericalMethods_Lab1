@@ -9,6 +9,19 @@ int main() {
     py::scoped_interpreter guard{};
 
     try {
+        // Отладка
+        py::module os = py::module::import("os");
+        py::print(os.attr("getcwd")());
+
+        bool exists = os.attr("path").attr("exists")("gui.py").cast<bool>();
+        std::cout << "gui.py exists: " << exists << std::endl;
+        
+        py::exec(R"(
+            import sys
+            print(sys.path)
+            import gui
+        )");
+
         // Добавляем текущую папку в sys.path
         py::module sys = py::module::import("sys");
         sys.attr("path").attr("append")(".");
