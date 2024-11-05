@@ -146,22 +146,38 @@ void FirstTask::Solve_Without_Error_Control()
 // Функции для проверки в main
 void FirstTask::PrintTable()
 {
-	std::cout << std::setw(30) << "i" << std::setw(30) << "X" << std::setw(30) << "V" << std::setw(30) << "V^" << std::setw(30) << "V-V^" << std::setw(30) << "S" <<
-		std::setw(30) << "Step" << std::setw(30) << "Уменьшения" << std::setw(30) << "Удвоения" << std::setw(30) << std::endl;
-
-	for (auto it_list = TABLE_INFORMATION.begin(); it_list != TABLE_INFORMATION.end(); ++it_list) {
-		for (size_t i = 0; i < 9; ++i) {
-			if (i == 1) {
-				std::cout << std::setw(30) << (*it_list)[i];
+	if (TABLE_INFORMATION.front().size() == 4) {
+		std::cout << std::setw(30) << "i" << std::setw(30) << "X" << std::setw(30) << "V" << std::setw(30) << "Step" << std::endl;
+		for (auto it_list = TABLE_INFORMATION.begin(); it_list != TABLE_INFORMATION.end(); ++it_list) {
+			for (size_t i = 0; i < 4; ++i) {
+				if (i == 1) {
+					std::cout << std::setw(30) << (*it_list)[i];
+				}
+				else {
+					std::cout << std::setprecision(16) << std::setw(30) << (*it_list)[i];
+				}
 			}
-			else if (i == 7 || i == 8) {
-				std::cout << std::setw(30) << static_cast<int>((*it_list)[i]);
-			}
-			else {
-				std::cout << std::setprecision(16) << std::setw(30) << (*it_list)[i];
-			}
+			std::cout << std::endl;
 		}
-		std::cout << std::endl;
+	}
+	else {
+		std::cout << std::setw(30) << "i" << std::setw(30) << "X" << std::setw(30) << "V" << std::setw(30) << "V^" << std::setw(30) << "V-V^" << std::setw(30) << "S" <<
+			std::setw(30) << "Step" << std::setw(30) << "Уменьшения" << std::setw(30) << "Удвоения" << std::setw(30) << std::endl;
+
+		for (auto it_list = TABLE_INFORMATION.begin(); it_list != TABLE_INFORMATION.end(); ++it_list) {
+			for (size_t i = 0; i < 9; ++i) {
+				if (i == 1) {
+					std::cout << std::setw(30) << (*it_list)[i];
+				}
+				else if (i == 7 || i == 8) {
+					std::cout << std::setw(30) << static_cast<int>((*it_list)[i]);
+				}
+				else {
+					std::cout << std::setprecision(16) << std::setw(30) << (*it_list)[i];
+				}
+			}
+			std::cout << std::endl;
+		}
 	}
 }
 
