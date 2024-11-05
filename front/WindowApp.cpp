@@ -9,6 +9,10 @@ int main() {
     py::scoped_interpreter guard{};
 
     try {
+        // Добавляем текущую папку в sys.path
+        py::module sys = py::module::import("sys");
+        sys.attr("path").attr("append")(".");
+
         // Импортируем модуль GUI
         py::module gui_module = py::module::import("gui");
 
