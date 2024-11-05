@@ -8,6 +8,19 @@ from Lab_1_Module import TestTask, FirstTask, SecondTask
 
 class Window:
     def __init__(self, master):
+        # variables
+        self.table_data = None
+        self.A = None
+        self.B = None
+        self.U0 = None
+        self.step_size = None
+        self.max_e_error = None
+        self.e_border = None
+        self.max_steps = None
+        self.alpha = None
+        self.final_ref = None
+
+        # window master
         self.master = master
         self.master.title("Задача Коши для ОДУ")
         self.master.geometry("1200x600")
@@ -45,6 +58,18 @@ class Window:
         for widget in self.master.winfo_children():
             if widget not in [self.task_selector, tk.Label(self.master, text="Задача")]:
                 widget.destroy()
+        
+        # Clear variables
+        self.table_data = None
+        self.A = None
+        self.B = None
+        self.U0 = None
+        self.step_size = None
+        self.max_e_error = None
+        self.e_border = None
+        self.max_steps = None
+        self.alpha = None
+        self.final_ref = None
 
     def create_test_task_widgets(self):
         self.master.grid_columnconfigure(0, weight=100)
@@ -220,6 +245,7 @@ class Window:
         tk.Label(self.master, text="Контроль лок. погрешности:").grid(row=4, column=1, sticky='e')
         tk.Label(self.master, text="Точность выхода на границу:").grid(row=5, column=1, sticky='e')
         tk.Label(self.master, text="Макс. число шагов:").grid(row=6, column=1, sticky='e')
+        tk.Label(self.master, text="Альфа:").grid(row=2, column=0, sticky='w')
 
         # Input fields
         self.entry_a = tk.Entry(self.master)
@@ -229,6 +255,7 @@ class Window:
         self.entry_max_e_error = tk.Entry(self.master)
         self.entry_e_border = tk.Entry(self.master)
         self.entry_max_steps = tk.Entry(self.master)
+        self.entry_alpha = tk.Entry(self.master)
 
         # Set default values
         self.entry_a.insert(0, "0.0")
@@ -238,6 +265,7 @@ class Window:
         self.entry_max_e_error.insert(0, "1e-5")
         self.entry_e_border.insert(0, "1e-6")
         self.entry_max_steps.insert(0, "10000")
+        self.entry_alpha.insert(0, "1")
 
         # Placement of input fields
         self.entry_a.grid(row=0, column=2, sticky='ew')
@@ -247,11 +275,12 @@ class Window:
         self.entry_max_e_error.grid(row=4, column=2, sticky='ew')
         self.entry_e_border.grid(row=5, column=2, sticky='ew')
         self.entry_max_steps.grid(row=6, column=2, sticky='ew')
+        self.entry_alpha.grid(row=3, column=0, sticky='ew')
 
         # Toggle button
-        tk.Label(self.master, text="Режим работы").grid(row=3, column=0, sticky='w')
+        tk.Label(self.master, text="Режим работы").grid(row=4, column=0, sticky='w')
         self.button_mode = tk.Button(self.master, text="С ОЛП", command=self.toggle_mode)
-        self.button_mode.grid(row=4, column=0, sticky='we')
+        self.button_mode.grid(row=5, column=0, sticky='we')
 
         # Calculate button
         self.calculate_button = tk.Button(self.master, text="Вычислить", command=self.calculate_values)
@@ -286,47 +315,57 @@ class Window:
         # Place the canvas (the graph) in the bottom right
         self.canvas.get_tk_widget().grid(row=6, column=4, rowspan=5, sticky='se', padx=5, pady=5)
 
+        # Кнопка для построения графика V1(V0)
+        self.plot_button = tk.Button(self.master, text="Построить график V1(V0)", command=self.toggle_plot)
+        self.plot_button.grid(row=7, column=4, sticky='we', padx=5, pady=5)
+
     def calculate_values(self):
         try:
+            selected_task = self.task_selector.get()
+
             # Получение значений из полей ввода
-            A = float(self.entry_a.get())
-            B = float(self.entry_b.get())
-            U0 = float(self.entry_u0.get())
-            step_size = float(self.entry_step_size.get())
-            max_e_error = float(self.entry_max_e_error.get())
-            e_border = float(self.entry_e_border.get())
-            max_steps = int(self.entry_max_steps.get())
+            self.A = float(self.entry_a.get())
+            self.B = float(self.entry_b.get())
+            self.U0 = float(self.entry_u0.get())
+            self.step_size = float(self.entry_step_size.get())
+            self.max_e_error = float(self.entry_max_e_error.get())
+            self.e_border = float(self.entry_e_border.get())
+            self.max_steps = int(self.entry_max_steps.get())
+
+            if selected_task == "Вторая":
+                self.alpha = float(self.entry_alpha.get())
 
             # Проверки на корректность значений
-            if A >= B:
+            if self.A >= self.B:
                 messagebox.showerror("Ошибка", "Значение A должно быть меньше B.")
                 return
-            if max_steps <= 1:
+            if self.max_steps <= 1:
                 messagebox.showerror("Ошибка", "Максимальное количество шагов должно быть больше 1.")
                 return
 
             # Выбор задачи на основе выбранного элемента в ComboBox
-            selected_task = self.task_selector.get()
             if selected_task == "Тестовая":
-                task = TestTask(A, B, step_size, max_e_error, e_border, max_steps, U0)
+                task = TestTask(self.A, self.B, self.step_size, self.max_e_error, self.e_border, self.max_steps, self.U0)
             elif selected_task == "Первая":
-                task = FirstTask(A, B, step_size, max_e_error, e_border, max_steps, U0)
+                task = FirstTask(self.A, self.B, self.step_size, self.max_e_error, self.e_border, self.max_steps, self.U0)
             elif selected_task == "Вторая":
-                task = SecondTask(A, B, step_size, max_e_error, e_border, max_steps, U0)
+                task = SecondTask(self.A, self.B, self.step_size, self.max_e_error, self.e_border, self.max_steps, self.U0)
+                task.set_alpha(self.alpha)
 
             # Вычисление
             if self.button_mode.cget('text') == 'С ОЛП':
                 task.Solve_With_Error_Control()
-                self.update_table(task.get_table_information())
             else:
                 task.Solve_Without_Error_Control()
-                self.update_table(task.get_table_information())
+            self.table_data = task.get_table_information()
+            self.update_table()
 
             # Отчет
-            self.show_final_reference(task.get_final_reference())
+            self.final_ref = task.get_final_reference()
+            self.show_final_reference()
 
             # Обновление графика с U(x) и V(x)
-            self.plot_graph(U0, A, B, task.get_table_information())
+            self.plot_graph_V_X()
 
         except ValueError:
             messagebox.showerror("Ошибка", "Пожалуйста, введите корректные значения.")
@@ -338,7 +377,16 @@ class Window:
         else:
             self.button_mode.config(text='С ОЛП')
 
-    def update_table(self, table_data):
+    # Функция для переключения между графиками
+    def toggle_plot(self):
+        if self.plot_button.cget('text') == 'Построить график V1(V0)':
+            self.plot_v0_v1()
+            self.plot_button.config(text="Построить график V(x)")
+        else:
+            self.plot_graph_V_X()
+            self.plot_button.config(text="Построить график V1(V0)")
+
+    def update_table(self):
         # Clear Treeview before updating
         for row in self.tree.get_children():
             self.tree.delete(row)
@@ -380,27 +428,25 @@ class Window:
                 self.tree.column(columns[i], width=arr_width[i], minwidth=arr_width[i])  # Set column width
 
         # Add data to the table with formatting
-        for row in table_data:
+        for row in self.table_data:
             formatted_row = [f"{value:.6g}" if isinstance(value, float) else value for value in row]
             self.tree.insert("", "end", values=formatted_row)
 
-    def plot_graph(self, U0, A, B, table_data):
-        # Clear the plot
-        self.ax.clear()
-
+    def plot_graph_V_X(self):
         # Generate data for the first plot
         if self.task_selector.get() == "Тестовая":
-            x = np.linspace(A, B, 100)
-            U = U0 * np.exp(-x / 2)
+            x = np.linspace(self.A, self.B, 100)
+            U = self.U0 * np.exp(-x / 2)
 
             # Plot U(x)
-            self.ax.plot(x, U, label=f'U(x) = {U0} * exp(-x/2)', color='blue')
+            self.ax.plot(x, U, label=f'U(x) = {self.U0} * exp(-x/2)', color='blue')
 
         # Extract X and V values from table data for the second plot
-        X_values = [row[1] for row in table_data]  # Assuming the second column is X
-        V_values = [row[2] for row in table_data]  # Assuming the third column is V
+        X_values = [row[1] for row in self.table_data]
+        V_values = [row[2] for row in self.table_data]
 
-        # Plot V(x)
+        # Очистка и построение графика
+        self.ax.clear()
         self.ax.plot(X_values, V_values, label='V(x)', color='red')
 
         # Set log scale for Y-axis if task is "Первая"
@@ -417,20 +463,42 @@ class Window:
         # Update the plot
         self.canvas.draw()
 
-    def show_final_reference(self, final_ref):
+    def plot_v0_v1(self):
+        try:
+            # Extract X and V values from table data for the second plot
+            V0_values = [row[2] for row in self.table_data]
+            V1_values = [row[3] for row in self.table_data]
+
+            # Очистка и построение графика
+            self.ax.clear()
+            self.ax.plot(V0_values, V1_values, label='V1(V0)', color='blue')
+
+            # Customize the plot
+            self.ax.set_xlabel("V0")
+            #self.ax.set_ylabel("V1")
+            self.ax.legend()
+            self.ax.grid()
+
+            # Update the plot
+            self.canvas.draw()
+
+        except Exception as e:
+            messagebox.showerror("Ошибка", f"Не удалось построить график: {e}")
+
+    def show_final_reference(self):
         # Clear the previous report text
         self.final_report_text.delete(1.0, tk.END)
 
         # Insert new information into the Text widget
         info = (
-            f"Количество итераций: {final_ref.ITERATIONS_COUNT}\n"
-            f"Расстояние до последней точки: {final_ref.DISTANCE_B_LAST_POINT}\n"
-            f"Максимальная ошибка: {final_ref.MAX_ERROR}\n"
-            f"Количество удвоений шага: {final_ref.STEP_DOUBLING_COUNT}\n"
-            f"Количество уменьшений шага: {final_ref.STEP_REDUCTION_COUNT}\n"
-            f"Макс. шаг с X: {final_ref.MAX_STEP_WITH_X}\n"
-            f"Мин. шаг с X: {final_ref.MIN_STEP_WITH_X}\n"
-            f"Макс. расстояние U-V: {final_ref.MAX_DISTANCE_U_V}"
+            f"Количество итераций: {self.final_ref.ITERATIONS_COUNT}\n"
+            f"Расстояние до последней точки: {self.final_ref.DISTANCE_B_LAST_POINT}\n"
+            f"Максимальная ошибка: {self.final_ref.MAX_ERROR}\n"
+            f"Количество удвоений шага: {self.final_ref.STEP_DOUBLING_COUNT}\n"
+            f"Количество уменьшений шага: {self.final_ref.STEP_REDUCTION_COUNT}\n"
+            f"Макс. шаг с X: {self.final_ref.MAX_STEP_WITH_X}\n"
+            f"Мин. шаг с X: {self.final_ref.MIN_STEP_WITH_X}\n"
+            f"Макс. расстояние U-V: {self.final_ref.MAX_DISTANCE_U_V}"
         )
         self.final_report_text.insert(tk.END, info)
 
