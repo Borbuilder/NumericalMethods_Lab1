@@ -7,7 +7,7 @@
 std::vector<double> SecondTask::f(const double& X, const std::vector<double>& V)
 {
     double f_1 = V[1];
-    double f_2 = -parametrs.A * sin(V[0]);
+    double f_2 = -alpha * sin(V[0]);
 
     std::vector<double> function(2);
     function[0] = f_1;
@@ -87,6 +87,11 @@ void SecondTask::control_Error(double& X, std::vector<double>& V, double& X_EXTR
 			}
 		}
 	}
+}
+
+void SecondTask::set_alpha(double _alpha)
+{
+	alpha = _alpha;
 }
 
 void SecondTask::Solve_Without_Error_Control()

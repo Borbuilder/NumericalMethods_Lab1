@@ -26,8 +26,13 @@ int main()
 	std::cout << "Выбирите вариант решения: ";
 	std::cin >> option;
 	std::cout << std::endl;
-	
 
+	double a;
+	if (task == 2) {
+		
+		std::cout << "Введите параметр а: " << std::endl;
+		std::cin >> a;
+	}
 
 	std::cout << "Введите левую границу интегрирования А: " << std::endl;
 	std::cin >> A;
@@ -52,6 +57,7 @@ int main()
 
 	if (task == 0) {
 		TestTask Solution(A, B, STEP, E_ERROR, E_BORDER, MAX_STEPS, START_POINT_FOR_U);
+		
 		if (option == 1) {
 
 			Solution.Solve_Without_Error_Control();
@@ -82,6 +88,7 @@ int main()
 
 	if (task == 2) {
 		SecondTask Solution2(A, B, STEP, E_ERROR, E_BORDER, MAX_STEPS, START_POINT_FOR_U);
+		Solution2.set_alpha(a);
 		if (option == 1) {
 
 			Solution2.Solve_Without_Error_Control();
