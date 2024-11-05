@@ -17,7 +17,7 @@ protected:
 
     void control_Error(double& X, std::vector<double>& V, double& X_EXTRA, std::vector<double>& V_EXTRA, double& OLD_X,
                        std::vector<double>& OLD_V, double& S, double& CURRENT_DOUBLING, double& CURRENT_REDUCTION);
-    double alpha; //Параметр а для уравнения
+    double alpha{}; //Параметр а для уравнения
 public:
 
     void set_alpha(double _alpha); //Параметр а для уравнения
