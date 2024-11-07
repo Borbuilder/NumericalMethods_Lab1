@@ -23,14 +23,14 @@ std::vector<double> SecondTask::find_K1(const double& X, const std::vector<doubl
 
 std::vector<double> SecondTask::find_K2(const double& X, const std::vector<double>& V, const double& STEP, const std::vector<double>& K1)
 {
-    std::vector<double> new_V{ V[0] + (STEP / 2) * K1[0], V[1] + (STEP / 2) * K1[1] };
-    return f(X + STEP / 2, new_V);
+    std::vector<double> new_V{ V[0] + (STEP / 2.0) * K1[0], V[1] + (STEP / 2.0) * K1[1] };
+    return f(X + STEP / 2.0, new_V);
 }
 
 std::vector<double> SecondTask::find_K3(const double& X, const std::vector<double>& V, const double& STEP, const std::vector<double>& K2)
 {
-    std::vector<double> new_V{ V[0] + (STEP / 2) * K2[0], V[1] + (STEP / 2) * K2[1] };
-    return f(X + STEP / 2, new_V);
+    std::vector<double> new_V{ V[0] + (STEP / 2.0) * K2[0], V[1] + (STEP / 2.0) * K2[1] };
+    return f(X + STEP / 2.0, new_V);
 }
 
 std::vector<double> SecondTask::find_K4(const double& X, const std::vector<double>& V, const double& STEP, const std::vector<double>& K3)
@@ -47,14 +47,14 @@ void SecondTask::make_Step(double& X, std::vector<double>& V, const double& STEP
     std::vector<double> K4 = find_K4(X, V, STEP, K3);
 
     X += STEP;
-    V[0] += (STEP / 6) * (K1[0] + 2 * K2[0] + 2 * K3[0] + K4[0]);
-    V[1] += (STEP / 6) * (K1[1] + 2 * K2[1] + 2 * K3[1] + K4[1]);
+    V[0] += (STEP / 6.0) * (K1[0] + 2.0 * K2[0] + 2.0 * K3[0] + K4[0]);
+    V[1] += (STEP / 6.0) * (K1[1] + 2.0 * K2[1] + 2.0 * K3[1] + K4[1]);
 }
 
 void SecondTask::control_Error(double& X, std::vector<double>& V, double& X_EXTRA, std::vector<double>& V_EXTRA, double& OLD_X, std::vector<double>& OLD_V, double& S, double& CURRENT_DOUBLING, double& CURRENT_REDUCTION)
 {
-	if (abs(S) < parametrs.E_ERROR / pow(2, 5)) { // ”словие дл€ удвоени€
-		parametrs.STEP *= 2;
+	if (abs(S) < parametrs.E_ERROR / pow(2.0, 5)) { // ”словие дл€ удвоени€
+		parametrs.STEP *= 2.0;
 		++reference.STEP_DOUBLING_COUNT;
 		++CURRENT_DOUBLING;
 	}
@@ -63,7 +63,7 @@ void SecondTask::control_Error(double& X, std::vector<double>& V, double& X_EXTR
 		double h = parametrs.STEP;  				  // выполн€ем расчЄт с половинным шагом, если дл€ него погрешность снова 
 		while (!FLAG_TO_EXIT) {
 			// оказалась большой, то снова возвращаемс€ и делим шаг, и так пока погрешность не будет допустимой
-			h /= 2;
+			h /= 2.0;
 			++CURRENT_REDUCTION;
 			++reference.STEP_REDUCTION_COUNT;
 
@@ -73,13 +73,12 @@ void SecondTask::control_Error(double& X, std::vector<double>& V, double& X_EXTR
 			X_EXTRA = X;
 
 			for (int i = 0; i < 2; ++i) {
-				make_Step(X_EXTRA, V_EXTRA, h / 2);
-				++reference.ITERATIONS_COUNT;
+				make_Step(X_EXTRA, V_EXTRA, h / 2.0);
 			}
 			make_Step(X, V, h);
 
-			double s_1 = (V_EXTRA[0] - V[0]) / (pow(2, 4) - 1);
-			double s_2 = (V_EXTRA[1] - V[1]) / (pow(2, 4) - 1);
+			double s_1 = (V_EXTRA[0] - V[0]) / (pow(2.0, 4.0) - 1.0);
+			double s_2 = (V_EXTRA[1] - V[1]) / (pow(2.0, 4.0) - 1.0);
 			S = sqrt(s_1 * s_1 + s_2 * s_2);
 			if (abs(S) <= parametrs.E_ERROR) {
 				FLAG_TO_EXIT = true;
@@ -143,88 +142,91 @@ void SecondTask::Solve_With_Error_Control()
 
 	std::vector<double> TABLE_ROW1 = { 1.0, X, V[0], V[1], V[0], V[1], 0.0, 0.0, 0.0, parametrs.STEP, 0.0, 0.0}; // «десь и далее - строка итоговой таблицы в виде (12 элементов)
 	TABLE_INFORMATION.emplace_back(TABLE_ROW1);									// { i; X_i; V[0]_i; V[1]_i; V[0]_i^; V[1]_i^; V[0]_i-V[0]_i^; V[1]_i-V[1]_i^; ќЋѕ(S); STEP_i;  ол-во делений;  ол-во удвоений  }
+	++reference.ITERATIONS_COUNT;
 
 	double OLD_X = X;
 	std::vector<double> OLD_V = V;
 
 	for (int i = 2; i <= parametrs.MAX_STEPS; ++i)
 	{
-		double CURRENT_DOUBLING{};  //  ол-во удвоений на текущем шаге
-		double CURRENT_REDUCTION{}; //  ол-во делений на текущем шаге
+		double CURRENT_DOUBLING{};				//  ол-во удвоений на текущем шаге
+		double CURRENT_REDUCTION{};				//  ол-во делений на текущем шаге
 
 		std::vector<double> V_EXTRA = V;         // V^ дл€ половинного шага
-		double X_EXTRA = X;			// X^ дл€ половинного шага
+		double X_EXTRA = X;						 // X^ дл€ половинного шага
 
 		for (int j = 0; j < 2; ++j) {
-			make_Step(X_EXTRA, V_EXTRA, parametrs.STEP / 2);
-			++reference.ITERATIONS_COUNT;
+			make_Step(X_EXTRA, V_EXTRA, parametrs.STEP / 2.0);
 		}
 		make_Step(X, V, parametrs.STEP);
 
-		double s_1 = (V_EXTRA[0] - V[0]) / (pow(2, 4) - 1);
-		double s_2 = (V_EXTRA[1] - V[1]) / (pow(2, 4) - 1);
+		double s_1 = (V_EXTRA[0] - V[0]) / (pow(2.0, 4.0) - 1.0);
+		double s_2 = (V_EXTRA[1] - V[1]) / (pow(2.0, 4.0) - 1.0);
 		double S = sqrt(s_1 * s_1 + s_2 * s_2);
-		ERRORS_LIST.emplace_back(S * pow(2, 4));
+		ERRORS_LIST.emplace_back(abs(S * pow(2.0, 4.0)));
 		control_Error(X, V, X_EXTRA, V_EXTRA, OLD_X, OLD_V, S, CURRENT_DOUBLING, CURRENT_REDUCTION); // Ќепосредственно сам контроль Ћѕ, подробнее см. в реализации функции
-		STEPS_and_Xs.emplace_back(std::make_pair(parametrs.STEP, X));
 
-		std::vector<double> TABLE_ROW = { static_cast<double>(i), X, V[0],V[1], V_EXTRA[0],V_EXTRA[1], V[0] - V_EXTRA[0],V[1] - V_EXTRA[1], S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING};
-		TABLE_INFORMATION.emplace_back(TABLE_ROW);
-
+		if (X <= parametrs.B + parametrs.E_BORDER && !x_in_border(parametrs.B, X, parametrs.E_BORDER)) {
+			std::vector<double> TABLE_ROW = { static_cast<double>(i), X, V[0],V[1], V_EXTRA[0],V_EXTRA[1], V[0] - V_EXTRA[0],V[1] - V_EXTRA[1], S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING };
+			TABLE_INFORMATION.emplace_back(TABLE_ROW);
+			++reference.ITERATIONS_COUNT;
+			STEPS_and_Xs.emplace_back(std::make_pair(parametrs.STEP, X));
+		}
+		
+		int post_i_count = 0;
 		bool EXIT_FROM_FOR = false;
 		if (x_in_border(parametrs.B, X, parametrs.E_BORDER)) {                       //ѕроверка на попадание в окрестность правой границы по X. 
+			std::vector<double> TABLE_ROW = { static_cast<double>(i), X, V[0],V[1], V_EXTRA[0],V_EXTRA[1], V[0] - V_EXTRA[0],V[1] - V_EXTRA[1], S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING };
+			TABLE_INFORMATION.emplace_back(TABLE_ROW);
+			++reference.ITERATIONS_COUNT;
+			STEPS_and_Xs.emplace_back(std::make_pair(parametrs.STEP, X));
 			EXIT_FROM_FOR = true;												   //≈сли X попал в окрестность, завершаем интегрирование, выход€ из for по флагу
 		}
-		else if (X > parametrs.B + parametrs.E_BORDER) {						//≈сли оказались правее окрестности, то возвращаемс€ на шаг назад, делим шаг и выплн€ем
+		else if (X > parametrs.B + parametrs.E_BORDER) {						//≈сли оказались правее окрестности, то возвращаемс€ на шаг назад, делим шаг и выпoлн€ем
 			while (!x_in_border(parametrs.B, X, parametrs.E_BORDER)) {			//шаг интегрировани€ снова. ≈сли после него оказались снова правее, то повтор€ем деление,так 
 				X = OLD_X;														//пока не попадЄм в границу или не окажемс€ левее еЄ. ≈сли оказались левее границы 
 				V = OLD_V;														//после делени€ шага, то производим обычный шаг (1*) интегрирован€ с подсчЄтом погрешности, но саму
-				parametrs.STEP /= 2;											//погрешность не контролируем, так как она автоматически попадает под условие делени€, и так 
+				parametrs.STEP /= 2.0;											//погрешность не контролируем, так как она автоматически попадает под условие делени€, и так 
 				++CURRENT_REDUCTION;											//повтор€ем, пока не попадЄм в окрестность
 				++reference.STEP_REDUCTION_COUNT;
 
 				make_Step(X, V, parametrs.STEP);
-				if (X < parametrs.B - parametrs.E_BORDER) { //(1*)
+				if (X < parametrs.B - parametrs.E_BORDER || x_in_border(parametrs.B, X, parametrs.E_BORDER)) { //(1*)
 					X_EXTRA = X;
 					V_EXTRA = V;
 
 					for (int j = 0; j < 2; ++j) {
-						make_Step(X_EXTRA, V_EXTRA, parametrs.STEP / 2);
-						++reference.ITERATIONS_COUNT;
+						make_Step(X_EXTRA, V_EXTRA, parametrs.STEP / 2.0);
 					}
 
-					s_1 = (V_EXTRA[0] - V[0]) / (pow(2, 4) - 1);
-					s_2 = (V_EXTRA[1] - V[1]) / (pow(2, 4) - 1);
+					s_1 = (V_EXTRA[0] - V[0]) / (pow(2.0, 4) - 1.0);
+					s_2 = (V_EXTRA[1] - V[1]) / (pow(2.0, 4) - 1.0);
 					double S = sqrt(s_1 * s_1 + s_2 * s_2);
-					ERRORS_LIST.emplace_back(S * pow(2, 4));
+					ERRORS_LIST.emplace_back(abs(S * pow(2.0, 4)));
 					STEPS_and_Xs.emplace_back(std::make_pair(parametrs.STEP, X));
 
-					std::vector<double> TABLE_ROW = { static_cast<double>(++i), X, V[0],V[1], V_EXTRA[0],V_EXTRA[1], V[0] - V_EXTRA[0],V[1] - V_EXTRA[1],
+					std::vector<double> TABLE_ROW = { static_cast<double>(i+post_i_count), X, V[0],V[1], V_EXTRA[0],V_EXTRA[1], V[0] - V_EXTRA[0],V[1] - V_EXTRA[1],
 													  S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING };
 					TABLE_INFORMATION.emplace_back(TABLE_ROW);
+					++reference.ITERATIONS_COUNT;
 					CURRENT_DOUBLING = 0.0;
 					CURRENT_REDUCTION = 0.0;
 
 					OLD_X = X;
 					OLD_V = V;
+					++post_i_count;
 				}
-				++reference.ITERATIONS_COUNT;
 			}
 			EXIT_FROM_FOR = true;
 		}
 
 		if (EXIT_FROM_FOR) {
-			TABLE_ROW = { static_cast<double>(++i), X, V[0],V[1], V_EXTRA[0],V_EXTRA[1], V[0] - V_EXTRA[0],V[1] - V_EXTRA[1],
-											  S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING };
-			TABLE_INFORMATION.emplace_back(TABLE_ROW);
 			break;
 		}
 		else {
 			OLD_X = X;
 			OLD_V = V;
 		}
-
-		++reference.ITERATIONS_COUNT;
 	}
 	reference.DISTANCE_B_LAST_POINT = parametrs.B - X;
 	find_Max_Step();
