@@ -99,7 +99,8 @@ void SecondTask::Solve_Without_Error_Control()
 	std::vector<double> V = {parametrs.START_POINT_FOR_U, 0.0}; //Далее V[0] это U - искомая функция, V[1] это U' - её производная 
 
 	std::vector<double> TABLE_ROW1 = { 1.0, X, V[0],V[1], parametrs.STEP}; // Здесь и далее - строка итоговой таблицы в виде (5 элементов)
-	TABLE_INFORMATION.emplace_back(TABLE_ROW1);											       // { i; X_i; V0_i; V1_i; STEP_i }
+	TABLE_INFORMATION.emplace_back(TABLE_ROW1);
+	++reference.ITERATIONS_COUNT;										       // { i; X_i; V0_i; V1_i; STEP_i }
 
 	double OLD_X = X; //В переменых OLD храним значения с последного шага
 	std::vector<double> OLD_V = V;
@@ -117,11 +118,12 @@ void SecondTask::Solve_Without_Error_Control()
 				make_Step(X, V, parametrs.STEP);
 			}
 			FLAG_TO_EXIT = true;                        //Если X совпал с правой границей, заканчиваем интегрирование 
-			++reference.ITERATIONS_COUNT;
+			
 		}
 
 		std::vector<double> TABLE_ROW = { static_cast<double>(i), X, V[0],V[1], parametrs.STEP};
 		TABLE_INFORMATION.emplace_back(TABLE_ROW);
+		++reference.ITERATIONS_COUNT;
 
 		if (FLAG_TO_EXIT)
 			break;
@@ -130,7 +132,7 @@ void SecondTask::Solve_Without_Error_Control()
 			OLD_V = V;
 		}
 
-		++reference.ITERATIONS_COUNT;
+		
 	}
 }
 

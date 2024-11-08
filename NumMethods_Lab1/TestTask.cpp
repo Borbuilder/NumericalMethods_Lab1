@@ -142,6 +142,7 @@ void TestTask::Solve_Without_Error_Control()
 	
 	std::vector<double> TABLE_ROW1 = {1.0, X, V, parametrs.STEP, U, abs(U-V)}; // «десь и далее - строка итоговой таблицы в виде { i X_i V_i STEP_i U_i |U_i - V_i| }
 	TABLE_INFORMATION.emplace_back(TABLE_ROW1);
+	++reference.ITERATIONS_COUNT;
 
 	double OLD_X = X; //¬ переменых OLD храним значени€ с последного шага
 	double OLD_V = V;
@@ -162,12 +163,13 @@ void TestTask::Solve_Without_Error_Control()
 				make_Step(X, V, parametrs.STEP);
 			}
 			FLAG_TO_EXIT = true;                        //≈сли X совпал с правой границей, заканчиваем интегрирование 
-			++reference.ITERATIONS_COUNT;
+			
 		}
 
 		DISTANCE_Ui_Vi.emplace_back(abs(U - V));
 		std::vector<double> TABLE_ROW = { static_cast<double>(i), X, V, parametrs.STEP, U, abs(U - V)};
 		TABLE_INFORMATION.emplace_back(TABLE_ROW);
+		++reference.ITERATIONS_COUNT;
 
 		if (FLAG_TO_EXIT)
 			break;
@@ -177,7 +179,7 @@ void TestTask::Solve_Without_Error_Control()
 			OLD_U = U;
 		}
 
-		++reference.ITERATIONS_COUNT;
+		
 	}
 	find_Max_Distance_Ui_Vi();
 }

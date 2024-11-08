@@ -115,6 +115,7 @@ void FirstTask::Solve_Without_Error_Control()
 
 	std::vector<double> TABLE_ROW1 = { 1.0, X, V, parametrs.STEP}; // «десь и далее - строка итоговой таблицы в виде { i X_i V_i STEP_i }
 	TABLE_INFORMATION.emplace_back(TABLE_ROW1);
+	++reference.ITERATIONS_COUNT;
 
 	double OLD_X = X; //¬ переменых OLD храним значени€ с последного шага
 	double OLD_V = V;
@@ -133,11 +134,12 @@ void FirstTask::Solve_Without_Error_Control()
 				make_Step(X, V, parametrs.STEP);
 			}
 			FLAG_TO_EXIT = true;                        //≈сли X совпал с правой границей, заканчиваем интегрирование 
-			++reference.ITERATIONS_COUNT;
+			
 		}
 
 		std::vector<double> TABLE_ROW = { static_cast<double>(i), X, V, parametrs.STEP};
 		TABLE_INFORMATION.emplace_back(TABLE_ROW);
+		++reference.ITERATIONS_COUNT;
 
 		if (FLAG_TO_EXIT)
 			break;
@@ -146,7 +148,7 @@ void FirstTask::Solve_Without_Error_Control()
 			OLD_V = V;
 		}
 
-		++reference.ITERATIONS_COUNT;
+		
 	}
 }
 
