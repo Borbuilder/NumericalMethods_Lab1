@@ -34,11 +34,16 @@ void FirstTask::Solve_With_Error_Control()
 		}
 		make_Step(X, V, parametrs.STEP);
 
+		if (std::isinf(V) || std::isnan(V) || std::isinf(V_EXTRA) || std::isnan(V_EXTRA)) {
+			reference.IS_INF = true;
+			break;
+		}
+
 		double S = (V_EXTRA - V) / (pow(2.0, 4) - 1.0);
 		ERRORS_LIST.emplace_back(abs(S * pow(2.0, 4)));
 		control_Error(X, V, X_EXTRA, V_EXTRA, OLD_X, OLD_V, S, CURRENT_DOUBLING, CURRENT_REDUCTION); // Ќепосредственно сам контроль Ћѕ, подробнее см. в реализации функции
 
-		if (X <= parametrs.B + parametrs.E_BORDER && !x_in_border(parametrs.B, X, parametrs.E_BORDER)) {
+		if (X < parametrs.B - parametrs.E_BORDER ) {
 			std::vector<double> TABLE_ROW = { static_cast<double>(i), X, V, V_EXTRA, V - V_EXTRA, S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING };
 			TABLE_INFORMATION.emplace_back(TABLE_ROW);
 			++reference.ITERATIONS_COUNT;
@@ -54,7 +59,7 @@ void FirstTask::Solve_With_Error_Control()
 			STEPS_and_Xs.emplace_back(std::make_pair(parametrs.STEP, X));
 			EXIT_FROM_FOR = true;												   //≈сли X попал в окрестность, завершаем интегрирование, выход€ из for по флагу
 		}
-		else if (X > parametrs.B + parametrs.E_BORDER) {						//≈сли оказались правее окрестности, то возвращаемс€ на шаг назад, делим шаг и выплн€ем
+		else if (X > parametrs.B ) {											//≈сли оказались правее окрестности, то возвращаемс€ на шаг назад, делим шаг и выплн€ем
 			while (!x_in_border(parametrs.B, X, parametrs.E_BORDER)) {			//шаг интегрировани€ снова. ≈сли после него оказались снова правее, то повтор€ем деление,так 
 				X = OLD_X;														//пока не попадЄм в границу или не окажемс€ левее еЄ. ≈сли оказались левее границы 
 				V = OLD_V;														//после делени€ шага, то производим обычный шаг (1*) интегрирован€ с подсчЄтом погрешности, но саму
@@ -63,7 +68,7 @@ void FirstTask::Solve_With_Error_Control()
 				++reference.STEP_REDUCTION_COUNT;
 
 				make_Step(X, V, parametrs.STEP);
-				if (X < parametrs.B - parametrs.E_BORDER || x_in_border(parametrs.B, X, parametrs.E_BORDER)) { //(1*)
+				if (X <= parametrs.B ) { //(1*)
 					X_EXTRA = X;
 					V_EXTRA = V;
 
@@ -73,8 +78,7 @@ void FirstTask::Solve_With_Error_Control()
 
 					S = (V_EXTRA - V) / (pow(2.0, 4) - 1.0);
 					ERRORS_LIST.emplace_back(abs(S) * pow(2.0, 4.0));
-					STEPS_and_Xs.emplace_back(std::make_pair(parametrs.STEP, X));
-
+				
 					std::vector<double> TABLE_ROW = { static_cast<double>(i + post_i_count), X, V, V_EXTRA, V - V_EXTRA, S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING};
 					TABLE_INFORMATION.emplace_back(TABLE_ROW);
 
@@ -124,6 +128,11 @@ void FirstTask::Solve_Without_Error_Control()
 	for (int i = 2; i <= parametrs.MAX_STEPS; ++i)
 	{
 		make_Step(X, V, parametrs.STEP);
+
+		if (std::isinf(V) || std::isnan(V)) {
+			reference.IS_INF = true;
+			break;
+		}
 
 		if (X >= parametrs.B) {
 			if (X > parametrs.B) {						// ≈сли X вышел за правую границу, возвращаемс€ на шаг назад и делаем шаг,                                        
@@ -216,4 +225,5 @@ void FirstTask::PrintReference()
 	std::cout << "MIN_STEP_WITH_X :" << "STEP = " << reference.MIN_STEP_WITH_X.first << "  X = " << reference.MIN_STEP_WITH_X.second << std::endl;
 	std::cout << "STEP_DOUBLING_COUNT :" << reference.STEP_DOUBLING_COUNT << std::endl;
 	std::cout << "STEP_REDUCTION_COUNT :" << reference.STEP_REDUCTION_COUNT << std::endl;
+	std::cout << "IS_INF :" << reference.IS_INF << std::endl;
 }

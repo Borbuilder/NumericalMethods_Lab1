@@ -11,7 +11,7 @@
 
 //Вспомогательные функции
 bool TestTask::x_in_border(const double& B, const double& X, const double& BORDER) { // Функция проверяет , находится ли текущий X в окрестности правой границы
-	return X >= B - BORDER && X <= B + BORDER;
+	return X >= B - BORDER && X <= B;
 }
 
 
@@ -154,16 +154,18 @@ void TestTask::Solve_Without_Error_Control()
 		make_Step(X, V, parametrs.STEP);
 		U = find_True_Solution(X, parametrs.START_POINT_FOR_U);
 
-		if (X >= parametrs.B) {           
-			if (X > parametrs.B) {						// Если X вышел за правую границу, возвращаемся на шаг назад и делаем шаг,                                        
-			    X = OLD_X;								//  равный разнице правой границы и последней точкой X и заканчиваем интегрирование
-				V = OLD_V;
-				U = OLD_U;
-				parametrs.STEP = parametrs.B - OLD_X;
-				make_Step(X, V, parametrs.STEP);
-			}
+		if (X > parametrs.B + parametrs.E_BORDER) {           
+													// Если X вышел за правую границу, возвращаемся на шаг назад и делаем шаг,                                        
+			X = OLD_X;								//  равный разнице правой границы и последней точкой X и заканчиваем интегрирование
+			V = OLD_V;
+			U = OLD_U;
+			parametrs.STEP = parametrs.B - OLD_X;
+			make_Step(X, V, parametrs.STEP);
 			FLAG_TO_EXIT = true;                        //Если X совпал с правой границей, заканчиваем интегрирование 
 			
+		}
+		if (x_in_border(parametrs.B, X, parametrs.E_BORDER)) {
+			FLAG_TO_EXIT = true;
 		}
 
 		DISTANCE_Ui_Vi.emplace_back(abs(U - V));
@@ -217,7 +219,7 @@ void TestTask::Solve_With_Error_Control()
 		control_Error(X, V, X_EXTRA, V_EXTRA, OLD_X, OLD_V, S, CURRENT_DOUBLING, CURRENT_REDUCTION);
 		U = find_True_Solution(X, parametrs.START_POINT_FOR_U);
 
-		if (X <= parametrs.B + parametrs.E_BORDER && !x_in_border(parametrs.B, X, parametrs.E_BORDER)) {
+		if (X < parametrs.B - parametrs.E_BORDER) {
 			std::vector<double> TABLE_ROW = { static_cast<double>(i), X, V, V_EXTRA, V - V_EXTRA, S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING, U, abs(U - V) };
 			TABLE_INFORMATION.emplace_back(TABLE_ROW);
 			++reference.ITERATIONS_COUNT;
@@ -233,7 +235,7 @@ void TestTask::Solve_With_Error_Control()
 			STEPS_and_Xs.emplace_back(std::make_pair(parametrs.STEP, X));
 			EXIT_FROM_FOR = true;												   //Если X попал в окрестность, завершаем интегрирование, выходя из for по флагу
 		}
-		else if (X > parametrs.B + parametrs.E_BORDER) {						//Если оказались правее окрестности, то возвращаемся на шаг назад, делим шаг и выплняем
+		else if (X > parametrs.B ) {											//Если оказались правее окрестности, то возвращаемся на шаг назад, делим шаг и выплняем
 			while (!x_in_border(parametrs.B, X, parametrs.E_BORDER)) {			//шаг интегрирования снова. Если после него оказались снова правее, то повторяем деление,так 
 				X = OLD_X;														//пока не попадём в границу или не окажемся левее её. Если оказались левее границы 
 				V = OLD_V;														//после деления шага, то производим обычный шаг (1*) интегрированя с подсчётом погрешности, но саму
@@ -242,7 +244,7 @@ void TestTask::Solve_With_Error_Control()
 				++reference.STEP_REDUCTION_COUNT;
 
 				make_Step(X, V, parametrs.STEP);
-				if (X < parametrs.B - parametrs.E_BORDER || x_in_border(parametrs.B, X, parametrs.E_BORDER)) { //(1*)
+				if (X<=parametrs.B) { //(1*)
 					X_EXTRA = X;
 					V_EXTRA = V;
 
@@ -382,6 +384,7 @@ void TestTask::PrintReference()
 	std::cout << "MIN_STEP_WITH_X :" << "STEP = " << reference.MIN_STEP_WITH_X.first <<"  X = " << reference.MIN_STEP_WITH_X.second << std::endl;
 	std::cout << "STEP_DOUBLING_COUNT :" << reference.STEP_DOUBLING_COUNT << std::endl;
 	std::cout << "STEP_REDUCTION_COUNT :" << reference.STEP_REDUCTION_COUNT << std::endl;
+	std::cout << "IS_INF :" << reference.IS_INF << std::endl;
 }
 
 

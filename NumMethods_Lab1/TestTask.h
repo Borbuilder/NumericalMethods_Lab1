@@ -50,6 +50,8 @@ public:
 		std::pair<double, double> MAX_STEP_WITH_X{}; // Максимальный шаг и Х, при котором этот шаг произошёл
 		std::pair<double, double> MIN_STEP_WITH_X{}; // Минимальный шаг и Х, при котором этот шаг произошёл
 		double MAX_DISTANCE_U_V{};                   // Максимальная разница между U_i и V_i (только для тестовой задачи)
+
+		bool IS_INF{false};                          // Флаг, принмимающий true , если при вычислении получили неопределённое значение V
 	};
 	FinalReference reference;							// Объект структуры Finalreference, в котором храняться парметры метода, описанные в структуре выше
 

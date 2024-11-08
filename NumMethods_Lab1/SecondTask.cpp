@@ -4,6 +4,16 @@
 #include <iostream>
 #include <fstream>
 
+bool is_infin(const std::vector<double>& V, const std::vector<double>& V_EX) {
+	bool flag{false};
+	if (std::isinf(V[0]) || std::isnan(V[0])) flag = true;
+	if (std::isinf(V[1]) || std::isnan(V[1])) flag = true;
+	if (std::isinf(V_EX[0]) || std::isnan(V_EX[0])) flag = true;
+	if (std::isinf(V_EX[1]) || std::isnan(V_EX[1])) flag = true;
+
+	return flag;
+}
+
 std::vector<double> SecondTask::f(const double& X, const std::vector<double>& V)
 {
     double f_1 = V[1];
@@ -109,6 +119,12 @@ void SecondTask::Solve_Without_Error_Control()
 	for (int i = 2; i <= parametrs.MAX_STEPS; ++i)
 	{
 		make_Step(X, V, parametrs.STEP);
+
+		std::vector<double> tmp{ 1.0,1.0 };
+		if (is_infin(V, tmp)) {
+			reference.IS_INF = true;
+			break;
+		}
 		
 		if (X >= parametrs.B) {
 			if (X > parametrs.B) {						// Если X вышел за правую границу, возвращаемся на шаг назад и делаем шаг,                                        
@@ -162,13 +178,18 @@ void SecondTask::Solve_With_Error_Control()
 		}
 		make_Step(X, V, parametrs.STEP);
 
+		if (is_infin(V,V_EXTRA)) {
+			reference.IS_INF = true;
+			break;
+		}
+
 		double s_1 = (V_EXTRA[0] - V[0]) / (pow(2.0, 4.0) - 1.0);
 		double s_2 = (V_EXTRA[1] - V[1]) / (pow(2.0, 4.0) - 1.0);
 		double S = sqrt(s_1 * s_1 + s_2 * s_2);
 		ERRORS_LIST.emplace_back(abs(S * pow(2.0, 4.0)));
 		control_Error(X, V, X_EXTRA, V_EXTRA, OLD_X, OLD_V, S, CURRENT_DOUBLING, CURRENT_REDUCTION); // Непосредственно сам контроль ЛП, подробнее см. в реализации функции
 
-		if (X <= parametrs.B + parametrs.E_BORDER && !x_in_border(parametrs.B, X, parametrs.E_BORDER)) {
+		if (X < parametrs.B - parametrs.E_BORDER) {
 			std::vector<double> TABLE_ROW = { static_cast<double>(i), X, V[0],V[1], V_EXTRA[0],V_EXTRA[1], V[0] - V_EXTRA[0],V[1] - V_EXTRA[1], S, parametrs.STEP, CURRENT_REDUCTION, CURRENT_DOUBLING };
 			TABLE_INFORMATION.emplace_back(TABLE_ROW);
 			++reference.ITERATIONS_COUNT;
@@ -184,7 +205,7 @@ void SecondTask::Solve_With_Error_Control()
 			STEPS_and_Xs.emplace_back(std::make_pair(parametrs.STEP, X));
 			EXIT_FROM_FOR = true;												   //Если X попал в окрестность, завершаем интегрирование, выходя из for по флагу
 		}
-		else if (X > parametrs.B + parametrs.E_BORDER) {						//Если оказались правее окрестности, то возвращаемся на шаг назад, делим шаг и выпoлняем
+		else if (X > parametrs.B ) {											//Если оказались правее окрестности, то возвращаемся на шаг назад, делим шаг и выпoлняем
 			while (!x_in_border(parametrs.B, X, parametrs.E_BORDER)) {			//шаг интегрирования снова. Если после него оказались снова правее, то повторяем деление,так 
 				X = OLD_X;														//пока не попадём в границу или не окажемся левее её. Если оказались левее границы 
 				V = OLD_V;														//после деления шага, то производим обычный шаг (1*) интегрированя с подсчётом погрешности, но саму
@@ -193,7 +214,7 @@ void SecondTask::Solve_With_Error_Control()
 				++reference.STEP_REDUCTION_COUNT;
 
 				make_Step(X, V, parametrs.STEP);
-				if (X < parametrs.B - parametrs.E_BORDER || x_in_border(parametrs.B, X, parametrs.E_BORDER)) { //(1*)
+				if (X <= parametrs.B ) { //(1*)
 					X_EXTRA = X;
 					V_EXTRA = V;
 
