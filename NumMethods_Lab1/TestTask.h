@@ -32,7 +32,7 @@ protected:
 	double find_K3(const double& X, const double& V, const double& STEP, const double& K2);				// ...K3
 	double find_K4(const double& X, const double& V, const double& STEP, const double& K3);				// ...K4
 	void make_Step(double& X, double& V, const double& STEP);                                           // Функция, выполняющая один шаг метиода, внутри меняются X и V
-	void control_Error(double& X, double& V, double& X_EXTRA, double& V_EXTRA, double& OLD_X,
+	int control_Error(double& X, double& V, double& X_EXTRA, double& V_EXTRA, double& OLD_X,
 					   double& OLD_V, double& S, double& CURRENT_DOUBLING, double& CURRENT_REDUCTION);  // Функция, в которой реализован контроль ЛП, ничего внутри себя не меняет
 
 	void find_Max_Step();		// Функция, которая ищет максимальный шаг, внутри параметру MAX_STEP_WITH_X структуры reference присваевается пара (STEP,X)

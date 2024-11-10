@@ -15,7 +15,7 @@ protected:
     std::vector<double> find_K4(const double& X, const std::vector<double>& V, const double& STEP, const std::vector<double>& K3);              // ...K4
     void make_Step(double& X, std::vector<double>& V, const double& STEP);
 
-    void control_Error(double& X, std::vector<double>& V, double& X_EXTRA, std::vector<double>& V_EXTRA, double& OLD_X,
+    int control_Error(double& X, std::vector<double>& V, double& X_EXTRA, std::vector<double>& V_EXTRA, double& OLD_X,
                        std::vector<double>& OLD_V, double& S, double& CURRENT_DOUBLING, double& CURRENT_REDUCTION);
     double alpha{}; //Параметр а для уравнения
 public:
